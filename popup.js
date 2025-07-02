@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const responseDiv = document.getElementById('response');
     const sendButton = document.getElementById('send');
     const clearButton = document.getElementById('clear');
+    const copyButton = document.getElementById('copy');
 
 
     // Подгружаем последний выделенный текст
@@ -56,5 +57,32 @@ document.addEventListener('DOMContentLoaded', () => {
         input.value = ''; // Очищаем поле ввода
         responseDiv.textContent = "Ответ появится здесь..."; // Сбрасываем поле ответа
         chrome.storage.local.remove('lastSelected'); // Удаляем сохраненный текст
+    });
+
+    // Обработчик кнопки "Копировать"
+    copyButton.addEventListener('click', () => {
+        // Проверяем, есть ли что копировать
+        if (responseDiv.textContent && 
+            responseDiv.textContent !== "Ответ появится здесь..." && 
+            responseDiv.textContent !== "Ожидание ответа..." && 
+            responseDiv.textContent !== "Введите текст.") {
+            
+            // Используем Clipboard API для копирования
+            navigator.clipboard.writeText(responseDiv.textContent)
+                .then(() => {
+                    // Временно меняем текст кнопки для подтверждения
+                    copyButton.textContent = "Скопировано!";
+                    setTimeout(() => {
+                        copyButton.textContent = "Копировать результат";
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Ошибка при копировании: ', err);
+                    copyButton.textContent = "Ошибка копирования";
+                    setTimeout(() => {
+                        copyButton.textContent = "Копировать результат";
+                    }, 2000);
+                });
+        }
     });
 });

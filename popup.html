@@ -67,10 +67,30 @@
             background-color: white;
             font-size: 14px;
             line-height: 1.4;
+            margin-bottom: 12px;
         }
         .output:empty::before {
             content: "Ответ появится здесь...";
             color: #999999;
+        }
+        #copy {
+            width: 100%;
+            padding: 8px 12px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
+            background-color: #009999;
+            color: white;
+        }
+        #copy:hover {
+            background-color: #007777;
+        }
+        #copy:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -86,6 +106,8 @@
     </div>
 
     <div class="output" id="response"></div>
+
+    <button id="copy">Копировать результат</button>
 
     <script src="popup.js"></script>
 </body>
