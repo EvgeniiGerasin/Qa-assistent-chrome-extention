@@ -1,16 +1,18 @@
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "sendText",
-    title: "Отправить текст в расширение",
-    contexts: ["selection"]
-  });
+    chrome.contextMenus.create({
+        id: "sendToOllama",
+        title: "Отправить в Ollama",
+        contexts: ["selection"]
+    });
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "sendText" && info.selectionText) {
-    chrome.storage.local.set({ selectedText: info.selectionText }, () => {
-      console.log("Текст сохранён:", info.selectionText);
-    });
-    chrome.action.openPopup();
-  }
+chrome.contextMenus.onClicked.addListener((info) => {
+    if (info.menuItemId === "sendToOllama") {
+        const selectedText = info.selectionText;
+        chrome.storage.local.set({ lastSelected: selectedText }, () => {
+            console.log("Сохранённый текст:", selectedText);
+        });
+        chrome.action.openPopup();
+    }
 });
+
