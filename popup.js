@@ -24,19 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const payload = {
             model: 'mistral:latest',
-            messages: [
-                {
-                    role: 'user',
-                    content: userInput
-                }
-            ]
+            prompt: userInput,
         };
 
         try {
-            const res = await fetch('http://127.0.0.1:5000/chat', {
-                method: 'POST',
+            const res = await fetch('http://127.0.0.1:8000/available-models/', {
+                method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
@@ -45,10 +39,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await res.json();
 
-            const reply = data.message?.content || "Ответа нет.";
-            responseDiv.textContent = reply;
+            // Вариант 1: Если сервер возвращает { models: [] }
+            if (data.models) {
+                responseDiv.textContent = `${data.models.join(', ')}`;
+            }
+            // Вариант 2: Если сервер возвращает { message: string }
+            else if (data.message) {
+                responseDiv.textContent = data.message;
+            }
+            // Вариант 3: Другой формат ответа
+            else {
+                responseDiv.textContent = `${JSON.stringify(data)}`;
+            }
 
         } catch (error) {
+            console.error("Ошибка запроса:", error);
             responseDiv.textContent = "Ошибка запроса: " + error.message;
         }
     });
@@ -62,11 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обработчик кнопки "Копировать"
     copyButton.addEventListener('click', () => {
         // Проверяем, есть ли что копировать
-        if (responseDiv.textContent && 
-            responseDiv.textContent !== "Ответ появится здесь..." && 
-            responseDiv.textContent !== "Ожидание ответа..." && 
+        if (responseDiv.textContent &&
+            responseDiv.textContent !== "Ответ появится здесь..." &&
+            responseDiv.textContent !== "Ожидание ответа..." &&
             responseDiv.textContent !== "Введите текст.") {
-            
+
             // Используем Clipboard API для копирования
             navigator.clipboard.writeText(responseDiv.textContent)
                 .then(() => {
