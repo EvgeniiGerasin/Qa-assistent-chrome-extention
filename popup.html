@@ -2,66 +2,90 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Ollama Client</title>
+    <title>QA Ассистент</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            width: 300px;
-            padding: 10px;
+            font-family: 'Arial', sans-serif;
+            width: 320px;
+            padding: 16px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h3 {
+            color: #009999;
+            margin-bottom: 16px;
+            font-weight: 600;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
         }
         textarea {
             width: 100%;
             height: 100px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 14px;
+            resize: vertical;
         }
         .button-group {
             display: flex;
-            gap: 8px; /* Отступ между кнопками */
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         .button-group button {
-            flex: 1; /* Равная ширина кнопок */
-            padding: 8px;
-            color: white;
+            flex: 1;
+            padding: 8px 12px;
+            font-weight: 500;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
         }
         #send {
-            background-color: #1976d2;
+            background-color: #009999;
+            color: white;
         }
         #send:hover {
-            background-color: #145ea8;
+            background-color: #007777;
         }
         #clear {
-            background-color: #f44336;
+            background-color: #999999;
+            color: white;
         }
         #clear:hover {
-            background-color: #d32f2f;
+            background-color: #777777;
         }
         .output {
-            margin-top: 10px;
+            margin-top: 12px;
             white-space: pre-wrap;
-            border: 1px solid #ccc;
-            padding: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 12px;
             border-radius: 4px;
-            min-height: 80px;
-            background-color: #f9f9f9;
+            min-height: 100px;
+            background-color: white;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .output:empty::before {
+            content: "Ответ появится здесь...";
+            color: #999999;
         }
     </style>
 </head>
 <body>
 
-    <h3>QA Аимер</h3>
+    <h3>QA Ассистент</h3>
 
-    <textarea id="input" placeholder="Введите текст или выделите на странице..."></textarea>
+    <textarea id="input" placeholder="Введите текст требования или выделите его на странице..."></textarea>
     
     <div class="button-group">
-        <button id="send">Отправить</button>
+        <button id="send">Анализировать</button>
         <button id="clear">Очистить</button>
     </div>
 
-    <div class="output" id="response">Ответ появится здесь...</div>
+    <div class="output" id="response"></div>
 
     <script src="popup.js"></script>
 </body>
