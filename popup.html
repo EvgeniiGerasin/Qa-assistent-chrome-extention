@@ -1,18 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Выделенный текст</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 10px; width: 300px; }
-    textarea { width: 100%; height: 150px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Ollama Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            width: 300px;
+            padding: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        .button-group {
+            display: flex;
+            gap: 8px; /* Отступ между кнопками */
+            margin-bottom: 10px;
+        }
+        .button-group button {
+            flex: 1; /* Равная ширина кнопок */
+            padding: 8px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #send {
+            background-color: #1976d2;
+        }
+        #send:hover {
+            background-color: #145ea8;
+        }
+        #clear {
+            background-color: #f44336;
+        }
+        #clear:hover {
+            background-color: #d32f2f;
+        }
+        .output {
+            margin-top: 10px;
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 4px;
+            min-height: 80px;
+            background-color: #f9f9f9;
+        }
+    </style>
 </head>
 <body>
-  <h3>Выделенный текст:</h3>
-  <textarea id="textArea"></textarea>
-  <br>
-  <button id="processBtn">Обработать</button>
-  <script src="popup.js"></script>
+
+    <h3>QA Аимер</h3>
+
+    <textarea id="input" placeholder="Введите текст или выделите на странице..."></textarea>
+    
+    <div class="button-group">
+        <button id="send">Отправить</button>
+        <button id="clear">Очистить</button>
+    </div>
+
+    <div class="output" id="response">Ответ появится здесь...</div>
+
+    <script src="popup.js"></script>
 </body>
 </html>
