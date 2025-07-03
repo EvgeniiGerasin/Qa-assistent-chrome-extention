@@ -1,1 +1,1 @@
-# creator-test-case-chrome
+# QA-ассистент расширение для Chrome
