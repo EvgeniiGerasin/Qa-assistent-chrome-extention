@@ -1,38 +1,46 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
-    <title>QA Ассистент</title>
+    <title>QA-ассистент</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
             width: 320px;
             padding: 16px;
-            background-color: #f5f5f5;
+            background-color: #F8F9FB;
             color: #333;
         }
+
         h3 {
-            color: #009999;
-            margin-bottom: 16px;
+            color: #000000;
+            font-size: 30px;
+            margin-bottom: 15px;
             font-weight: 600;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 2px solid #7BC21C;
             padding-bottom: 8px;
         }
+
         textarea {
+            font-family: 'Arial', sans-serif;
             width: 100%;
             height: 100px;
             margin-bottom: 12px;
-            border: 1px solid #cccccc;
+            border: 1px solid #ececec;
             border-radius: 4px;
             padding: 8px;
             font-size: 14px;
             resize: vertical;
+            background-color: #fafafa;
+            /* Светло-жёлтый фон */
         }
+
         .button-group {
             display: flex;
             gap: 8px;
             margin-bottom: 12px;
         }
+
         .button-group button {
             flex: 1;
             padding: 8px 12px;
@@ -43,36 +51,49 @@
             transition: background-color 0.2s;
             font-size: 14px;
         }
+
         #send {
-            background-color: #009999;
-            color: white;
+            background-color: #BDC3D1;
+            /* Лазурный */
+            color: rgb(0, 0, 0);
         }
+
         #send:hover {
-            background-color: #007777;
+            background-color: #acb1bd;
+            /* Темнее лазурный */
         }
+
         #clear {
-            background-color: #999999;
+            background-color: #C11F1D;
+            /* Бордовый */
             color: white;
         }
+
         #clear:hover {
-            background-color: #777777;
+            background-color: #941E1E;
+            /* Темнее бордовый */
         }
+
         .output {
+            font-family: 'Arial', sans-serif;
             margin-top: 12px;
             white-space: pre-wrap;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #ececec;
             padding: 12px;
             border-radius: 4px;
             min-height: 100px;
-            background-color: white;
+            background-color: #fafafa;
+            /* Салатовый фон */
             font-size: 14px;
             line-height: 1.4;
             margin-bottom: 12px;
         }
+
         .output:empty::before {
             content: "Ответ появится здесь...";
-            color: #999999;
+            color: #666;
         }
+
         #copy {
             width: 100%;
             padding: 8px 12px;
@@ -82,24 +103,29 @@
             cursor: pointer;
             transition: background-color 0.2s;
             font-size: 14px;
-            background-color: #009999;
+            background-color: #7BC21C;
+            /* Лазурный */
             color: white;
         }
+
         #copy:hover {
-            background-color: #007777;
+            background-color: #5f9617;
+            /* Темнее лазурный */
         }
+
         #copy:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
     </style>
 </head>
+
 <body>
 
-    <h3>QA Ассистент</h3>
+    <h3>QA-ассистент</h3>
 
     <textarea id="input" placeholder="Введите текст требования или выделите его на странице..."></textarea>
-    
+
     <div class="button-group">
         <button id="send">Анализировать</button>
         <button id="clear">Очистить</button>
@@ -111,4 +137,5 @@
 
     <script src="popup.js"></script>
 </body>
+
 </html>
