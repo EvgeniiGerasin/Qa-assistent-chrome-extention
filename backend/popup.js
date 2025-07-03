@@ -20,10 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Получаем состояние чекбокса
+        const checkListChecked = document.getElementById('checklist-toggle').checked;
+
         responseDiv.textContent = "Ожидание ответа...";
 
         const payload = {
             requirement: userInput,
+            check_list: checkListChecked
         };
 
         try {
