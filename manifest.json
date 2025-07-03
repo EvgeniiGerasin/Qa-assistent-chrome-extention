@@ -13,15 +13,15 @@
     "http://127.0.0.1:11434/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "backend/background.js"
   },
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_popup": "frontend/popup.html",
+    "default_icon": "icons/icon.png"
   },
   "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+    "16": "icons/icon.png",
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
   }
 }
