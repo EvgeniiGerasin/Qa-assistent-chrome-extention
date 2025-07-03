@@ -1,7 +1,7 @@
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "sendToOllama",
-        title: "Отправить в Ollama",
+        title: "Отправить QA-ассистенту",
         contexts: ["selection"]
     });
 });

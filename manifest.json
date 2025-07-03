@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Creator Test Case",
-  "version": "1.0",
-  "description": "Выдели текст и отправь в расширение",
+  "name": "QA-ассистент",
+  "version": "0.1",
+  "description": "Автогенерация тестовой документации. Выдели требование и сгенерируй!",
   "permissions": [
     "contextMenus",
     "activeTab",
