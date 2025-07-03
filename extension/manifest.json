@@ -7,16 +7,17 @@
     "contextMenus",
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "notifications"
   ],
   "host_permissions": [
     "http://127.0.0.1:11434/*"
   ],
   "background": {
-    "service_worker": "backend/background.js"
+    "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "frontend/popup.html",
+    "default_popup": "popup.html",
     "default_icon": "icons/icon.png"
   },
   "icons": {

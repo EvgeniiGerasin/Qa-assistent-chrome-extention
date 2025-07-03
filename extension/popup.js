@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    
     sendButton.addEventListener('click', async () => {
         const userInput = input.value.trim();
         if (!userInput) {
