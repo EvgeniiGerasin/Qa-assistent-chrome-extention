@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearButton = document.getElementById('clear');
     const copyButton = document.getElementById('copy');
 
-
     // Подгружаем последний выделенный текст
     chrome.storage.local.get(['lastSelected'], (result) => {
         if (result.lastSelected) {
@@ -13,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    
     sendButton.addEventListener('click', async () => {
         const userInput = input.value.trim();
         if (!userInput) {
@@ -27,41 +25,37 @@ document.addEventListener('DOMContentLoaded', () => {
         responseDiv.textContent = "Ожидание ответа...";
 
         const payload = {
-            requirement: userInput,
-            check_list: checkListChecked
+            requirement: userInput
         };
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/generate-test-cases/', {
+            let res;
+            if (checkListChecked == true)
+            {
+                res = await fetch('http://127.0.0.1:8000/generate_check_list/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
-            });
-
+                });
+            } else {
+                res = await fetch('http://127.0.0.1:8000/generate_check_list/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+                });
+            }
             if (!res.ok) {
                 throw new Error(`Ошибка: ${res.status} ${res.statusText}`);
             }
 
             const data = await res.json();
-
-            // Вариант 1: Если сервер возвращает { models: [] }
-            if (data.models) {
-                responseDiv.textContent = `${data.models.join(', ')}`;
-            }
-            // Вариант 2: Если сервер возвращает { message: string }
-            else if (data.message) {
-                responseDiv.textContent = data.message;
-            }
-            // Вариант 3: Другой формат ответа
-            else {
-                responseDiv.textContent = `${JSON.stringify(data)}`;
-            }
-
+            responseDiv.innerHTML = formatTestCases(data); // Pass JSON object directly
         } catch (error) {
             console.error("Ошибка запроса:", error);
             responseDiv.textContent = "Ошибка запроса: " + error.message;
         }
     });
+
     // Обработчик кнопки "Очистить"
     clearButton.addEventListener('click', () => {
         input.value = ''; // Очищаем поле ввода
@@ -96,3 +90,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function formatTestCases(data) {
+    // Ensure data is an object (in case it's a JSON string)
+    let testCases;
+    if (typeof data === 'string') {
+        try {
+            testCases = JSON.parse(data);
+        } catch (e) {
+            return '<p>Ошибка: Неверный формат JSON</p>';
+        }
+    } else {
+        testCases = data;
+    }
+
+    // Create an ordered list from the JSON object keys or values
+    let htmlOutput = '<ol>';
+    Object.values(testCases).forEach(testCase => {
+        // Escape HTML characters to prevent XSS and ensure proper display
+        const cleanTestCase = testCase
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        htmlOutput += `<li>${cleanTestCase}</li>`;
+    });
+    htmlOutput += '</ol>';
+
+    return htmlOutput;
+}
