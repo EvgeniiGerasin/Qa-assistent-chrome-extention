@@ -1,4 +1,7 @@
 // Функция для стриминга ответа от Ollama
+
+
+
 async function streamOllamaResponse(prompt, responseElement, thinking) {
     // Сразу очищаем поле ответа перед началом
     responseElement.innerText = 'Взял в работу...';
@@ -68,6 +71,14 @@ async function streamOllamaResponse(prompt, responseElement, thinking) {
     }
 }
 
+function getPrompt(type_prompt) {
+    let prompt = {
+        "testcase": "Ты опытный тестировщик ПО::Создай тест-кейсы по заданному требованию к ПО::ТРЕБОВАНИЕ: {requirement}::Формат вывода: номер_кейса.Название_проверки.\nШаги.\nОжидаемый_результат\n ::В ответе только результат без лишнего текста",
+        "checklist": "Ты опытный тестировщик ПО::Создай чек-лист по заданному требованию к ПО::ТРЕБОВАНИЕ: {requirement}::Формат вывода: номер_проверки.Суть_проверки_проверки ::В ответе только результат без лишнего текста",
+    }
+    return prompt[type_prompt]
+};
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('input');
@@ -75,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('send');
     const clearButton = document.getElementById('clear');
     const copyButton = document.getElementById('copy');
-    let prompts = {};
+    let finalPrompt;
 
     // Подгружаем последний выделенный текст (эта логика остается)
     chrome.storage.local.get(['lastSelected'], (result) => {
@@ -96,12 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const thinkingChecked = document.getElementById('thinking-toggle').checked;
 
         // Формируем финальный промпт для Ollama на основе ввода и чекбокса
-        let finalPrompt;
         if (checkListChecked) {
-            finalPrompt = `Создай чек-лист для следующего требования: "${userInput}"`;
+            finalPrompt = getPrompt('checklist').replace('{requirement}', userInput);
         } else {
-            finalPrompt = `Создай тест-кейс для следующего требования: "${userInput}"`;
-        }
+            finalPrompt = getPrompt('testcase').replace('{requirement}', userInput);
+        };
+
 
         responseDiv.textContent = "Генерация ответа..."; // Начальное сообщение
 
