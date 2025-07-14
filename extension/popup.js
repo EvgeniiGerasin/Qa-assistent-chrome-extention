@@ -3,7 +3,7 @@ async function streamOllamaResponse(prompt, responseElement, thinking) {
     // Сразу очищаем поле ответа перед началом
     responseElement.innerText = 'Взял в работу...';
 
-    var body;
+    let body;
     if (thinking) {
         body = JSON.stringify({
             model: 'deepseek-r1',
@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('send');
     const clearButton = document.getElementById('clear');
     const copyButton = document.getElementById('copy');
+    let prompts = {};
 
     // Подгружаем последний выделенный текст (эта логика остается)
     chrome.storage.local.get(['lastSelected'], (result) => {
