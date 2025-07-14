@@ -1,3 +1,59 @@
+// Функция для стриминга ответа от Ollama
+async function streamOllamaResponse(prompt, responseElement) {
+    // Сразу очищаем поле ответа перед началом
+    responseElement.innerText = '';
+
+    try {
+        const response = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'deepseek-r1', // Укажите вашу модель, например, llama3
+                prompt: prompt,  // Используем промпт, который передали в функцию
+                stream: true,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Ошибка сети: ${response.status} ${response.statusText}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            const jsonObjects = chunk.split('\n').filter(s => s.trim() !== '');
+
+            for (const jsonObjStr of jsonObjects) {
+                try {
+                    const parsed = JSON.parse(jsonObjStr);
+                    if (parsed.response) {
+                        // Просто добавляем сырой текст в элемент
+                        responseElement.innerText += parsed.response;
+                    }
+                    if (parsed.done) {
+                        return; // Завершаем, когда модель закончила генерацию
+                    }
+                } catch (e) {
+                    console.error("Ошибка парсинга JSON фрагмента:", jsonObjStr);
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Ошибка при стриминге ответа:", error);
+        responseElement.innerText = "Не удалось получить ответ от Ollama. Убедитесь, что сервер запущен.\n" + error.message;
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('input');
     const responseDiv = document.getElementById('response');
@@ -5,13 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearButton = document.getElementById('clear');
     const copyButton = document.getElementById('copy');
 
-    // Подгружаем последний выделенный текст
+    // Подгружаем последний выделенный текст (эта логика остается)
     chrome.storage.local.get(['lastSelected'], (result) => {
         if (result.lastSelected) {
             input.value = result.lastSelected;
         }
     });
 
+    // Обработчик кнопки "Отправить" - ТЕПЕРЬ С ЛОГИКОЙ СТРИМИНГА
     sendButton.addEventListener('click', async () => {
         const userInput = input.value.trim();
         if (!userInput) {
@@ -19,102 +76,41 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Получаем состояние чекбокса
         const checkListChecked = document.getElementById('checklist-toggle').checked;
+        
+        // Формируем финальный промпт для Ollama на основе ввода и чекбокса
+        let finalPrompt;
+        if (checkListChecked) {
+            finalPrompt = `Создай чек-лист для следующего требования: "${userInput}"`;
+        } else {
+            finalPrompt = `Создай тест-кейс для следующего требования: "${userInput}"`;
+        }
 
-        responseDiv.textContent = "Ожидание ответа...";
+        responseDiv.textContent = "Генерация ответа..."; // Начальное сообщение
 
-        const payload = {
-            requirement: userInput
-        };
+        // Вызываем нашу новую функцию для стриминга
+        await streamOllamaResponse(finalPrompt, responseDiv);
+    });
 
-        try {
-            let res;
-            if (checkListChecked == true)
-            {
-                res = await fetch('http://127.0.0.1:8000/generate_check_list/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-                });
-            } else {
-                res = await fetch('http://127.0.0.1:8000/generate_test_case/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-                });
-            }
-            if (!res.ok) {
-                throw new Error(`Ошибка: ${res.status} ${res.statusText}`);
-            }
+    // Обработчик кнопки "Очистить" (без изменений)
+    clearButton.addEventListener('click', () => {
+        input.value = '';
+        responseDiv.textContent = "Ответ появится здесь...";
+        chrome.storage.local.remove('lastSelected');
+    });
 
-            const data = await res.json();
-            responseDiv.innerHTML = formatTestCases(data); // Pass JSON object directly
-        } catch (error) {
-            console.error("Ошибка запроса:", error);
-            responseDiv.textContent = "Ошибка запроса: " + error.message;
+    // Обработчик кнопки "Копировать" (адаптирован для копирования текста)
+    copyButton.addEventListener('click', () => {
+        const textToCopy = responseDiv.innerText;
+        if (textToCopy && textToCopy !== "Ответ появится здесь..." && textToCopy !== "Введите текст.") {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                copyButton.textContent = "Скопировано!";
+                setTimeout(() => { copyButton.textContent = "Копировать результат"; }, 2000);
+            }).catch(err => {
+                console.error('Ошибка при копировании: ', err);
+            });
         }
     });
-
-    // Обработчик кнопки "Очистить"
-    clearButton.addEventListener('click', () => {
-        input.value = ''; // Очищаем поле ввода
-        responseDiv.textContent = "Ответ появится здесь..."; // Сбрасываем поле ответа
-        chrome.storage.local.remove('lastSelected'); // Удаляем сохраненный текст
-    });
-
-    // // Обработчик кнопки "Копировать"
-    // copyButton.addEventListener('click', () => {
-    //     // Проверяем, есть ли что копировать
-    //     if (responseDiv.textContent &&
-    //         responseDiv.textContent !== "Ответ появится здесь..." &&
-    //         responseDiv.textContent !== "Ожидание ответа..." &&
-    //         responseDiv.textContent !== "Введите текст.") {
-
-    //         // Используем Clipboard API для копирования
-    //         navigator.clipboard.writeText(data)
-    //             .then(() => {
-    //                 // Временно меняем текст кнопки для подтверждения
-    //                 copyButton.textContent = "Скопировано!";
-    //                 setTimeout(() => {
-    //                     copyButton.textContent = "Копировать результат";
-    //                 }, 2000);
-    //             })
-    //             .catch(err => {
-    //                 console.error('Ошибка при копировании: ', err);
-    //                 copyButton.textContent = "Ошибка копирования";
-    //                 setTimeout(() => {
-    //                     copyButton.textContent = "Копировать результат";
-    //                 }, 2000);
-    //             });
-    //     }
-    // });
 });
 
-function formatTestCases(data) {
-    // Ensure data is an object (in case it's a JSON string)
-    let testCases;
-    if (typeof data === 'string') {
-        try {
-            testCases = JSON.parse(data);
-        } catch (e) {
-            return '<p>Ошибка: Неверный формат JSON</p>';
-        }
-    } else {
-        testCases = data;
-    }
-
-    // Create an ordered list from the JSON object keys or values
-    let htmlOutput = '<ol>';
-    Object.values(testCases).forEach(testCase => {
-        // Escape HTML characters to prevent XSS and ensure proper display
-        const cleanTestCase = testCase
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-        htmlOutput += `<li>${cleanTestCase}</li>`;
-    });
-    htmlOutput += '</ol>';
-
-    return htmlOutput;
-}
+// Функция formatTestCases больше не нужна, она удалена.
