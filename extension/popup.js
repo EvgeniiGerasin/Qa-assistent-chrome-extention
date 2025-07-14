@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(payload)
                 });
             } else {
-                res = await fetch('http://127.0.0.1:8000/generate_check_list/', {
+                res = await fetch('http://127.0.0.1:8000/generate_test_case/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -63,32 +63,32 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.storage.local.remove('lastSelected'); // Удаляем сохраненный текст
     });
 
-    // Обработчик кнопки "Копировать"
-    copyButton.addEventListener('click', () => {
-        // Проверяем, есть ли что копировать
-        if (responseDiv.textContent &&
-            responseDiv.textContent !== "Ответ появится здесь..." &&
-            responseDiv.textContent !== "Ожидание ответа..." &&
-            responseDiv.textContent !== "Введите текст.") {
+    // // Обработчик кнопки "Копировать"
+    // copyButton.addEventListener('click', () => {
+    //     // Проверяем, есть ли что копировать
+    //     if (responseDiv.textContent &&
+    //         responseDiv.textContent !== "Ответ появится здесь..." &&
+    //         responseDiv.textContent !== "Ожидание ответа..." &&
+    //         responseDiv.textContent !== "Введите текст.") {
 
-            // Используем Clipboard API для копирования
-            navigator.clipboard.writeText(responseDiv.textContent)
-                .then(() => {
-                    // Временно меняем текст кнопки для подтверждения
-                    copyButton.textContent = "Скопировано!";
-                    setTimeout(() => {
-                        copyButton.textContent = "Копировать результат";
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error('Ошибка при копировании: ', err);
-                    copyButton.textContent = "Ошибка копирования";
-                    setTimeout(() => {
-                        copyButton.textContent = "Копировать результат";
-                    }, 2000);
-                });
-        }
-    });
+    //         // Используем Clipboard API для копирования
+    //         navigator.clipboard.writeText(data)
+    //             .then(() => {
+    //                 // Временно меняем текст кнопки для подтверждения
+    //                 copyButton.textContent = "Скопировано!";
+    //                 setTimeout(() => {
+    //                     copyButton.textContent = "Копировать результат";
+    //                 }, 2000);
+    //             })
+    //             .catch(err => {
+    //                 console.error('Ошибка при копировании: ', err);
+    //                 copyButton.textContent = "Ошибка копирования";
+    //                 setTimeout(() => {
+    //                     copyButton.textContent = "Копировать результат";
+    //                 }, 2000);
+    //             });
+    //     }
+    // });
 });
 
 function formatTestCases(data) {
