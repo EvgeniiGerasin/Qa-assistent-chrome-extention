@@ -1,7 +1,23 @@
 // Функция для стриминга ответа от Ollama
-async function streamOllamaResponse(prompt, responseElement) {
+async function streamOllamaResponse(prompt, responseElement, thinking) {
     // Сразу очищаем поле ответа перед началом
-    responseElement.innerText = '';
+    responseElement.innerText = 'Взял в работу...';
+
+    var body;
+    if (thinking) {
+        body = JSON.stringify({
+            model: 'deepseek-r1',
+            prompt: prompt,
+            stream: true,
+        });
+    } else {
+        body = JSON.stringify({
+            model: 'deepseek-r1',
+            prompt: prompt,
+            stream: true,
+            think: false,
+        });
+    };
 
     try {
         const response = await fetch('http://localhost:11434/api/generate', {
@@ -9,12 +25,11 @@ async function streamOllamaResponse(prompt, responseElement) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                model: 'deepseek-r1', // Укажите вашу модель, например, llama3
-                prompt: prompt,  // Используем промпт, который передали в функцию
-                stream: true,
-            }),
+            body: body
         });
+
+        // Очистка поля для вывода ответа
+        responseElement.innerText = '';
 
         if (!response.ok) {
             throw new Error(`Ошибка сети: ${response.status} ${response.statusText}`);
@@ -77,7 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const checkListChecked = document.getElementById('checklist-toggle').checked;
-        
+        const thinkingChecked = document.getElementById('thinking-toggle').checked;
+
         // Формируем финальный промпт для Ollama на основе ввода и чекбокса
         let finalPrompt;
         if (checkListChecked) {
@@ -89,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         responseDiv.textContent = "Генерация ответа..."; // Начальное сообщение
 
         // Вызываем нашу новую функцию для стриминга
-        await streamOllamaResponse(finalPrompt, responseDiv);
+        await streamOllamaResponse(finalPrompt, responseDiv, thinkingChecked);
     });
 
     // Обработчик кнопки "Очистить" (без изменений)
