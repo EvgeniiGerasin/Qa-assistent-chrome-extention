@@ -1,70 +1,68 @@
 // Функция для стриминга ответа от Ollama
-async function streamOllamaResponse(prompt, responseElement, thinking) {
-    // Сразу очищаем поле ответа перед началом
+async function streamOllamaResponse(prompt, responseElement, thinking = true) {
+    // Сразу очищаем поле ответа и показываем статус
     responseElement.innerText = 'Взял в работу...';
 
-    let body;
-    if (thinking) {
-        body = JSON.stringify({
-            model: 'deepseek-r1',
-            prompt: prompt,
-            stream: true,
-        });
-    } else {
-        body = JSON.stringify({
-            model: 'deepseek-r1',
-            prompt: prompt,
-            stream: true,
-            think: false,
-        });
-    };
-
     try {
-        const response = await fetch('http://localhost:11434/api/generate', {
-            method: 'POST',
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Authorization": "Bearer <<api-key>",
+                "X-Title": "Your Site Name",
+                "Content-Type": "application/json"
             },
-            body: body
+            body: JSON.stringify({
+                // model: "qwen/qwen3-coder:free",
+                model: "openai/gpt-oss-20b:free",
+                messages: [
+                    { role: "user", content: prompt }
+                ],
+                stream: true  // Включаем стриминг
+            })
         });
-
-        // Очистка поля для вывода ответа
-        responseElement.innerText = '';
 
         if (!response.ok) {
-            throw new Error(`Ошибка сети: ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Ошибка API: ${response.status} ${response.statusText} — ${errorText}`);
         }
 
+        // Очистим поле после подтверждения успешного ответа
+        responseElement.innerText = '';
+
         const reader = response.body.getReader();
-        const decoder = new TextDecoder();
+        const decoder = new TextDecoder("utf-8");
 
         while (true) {
             const { done, value } = await reader.read();
-            if (done) {
-                break;
-            }
+            if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            const jsonObjects = chunk.split('\n').filter(s => s.trim() !== '');
+            const lines = chunk.split('\n');
 
-            for (const jsonObjStr of jsonObjects) {
-                try {
-                    const parsed = JSON.parse(jsonObjStr);
-                    if (parsed.response) {
-                        // Просто добавляем сырой текст в элемент
-                        responseElement.innerText += parsed.response;
+            for (const line of lines) {
+                if (line.startsWith("data:")) {
+                    const dataStr = line.slice(5).trim(); // Убираем "data:"
+                    if (dataStr === "[DONE]") {
+                        return; // Стриминг завершён
                     }
-                    if (parsed.done) {
-                        return; // Завершаем, когда модель закончила генерацию
+
+                    try {
+                        const parsed = JSON.parse(dataStr);
+                        const content = parsed.choices?.[0]?.delta?.content;
+
+                        if (content) {
+                            responseElement.innerText += content;
+                        }
+                    } catch (e) {
+                        // Игнорируем ошибки парсинга отдельных фрагментов
+                        console.warn("Не удалось распарсить SSE-фрагмент:", dataStr);
                     }
-                } catch (e) {
-                    console.error("Ошибка парсинга JSON фрагмента:", jsonObjStr);
                 }
             }
         }
     } catch (error) {
         console.error("Ошибка при стриминге ответа:", error);
-        responseElement.innerText = "Не удалось получить ответ от Ollama. Убедитесь, что сервер запущен.\n" + error.message;
+        responseElement.innerText = "Не удалось получить ответ от модели.\n" + error.message;
     }
 }
 
@@ -84,6 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearButton = document.getElementById('clear');
     const copyButton = document.getElementById('copy');
     let finalPrompt;
+
+
 
     // Подгружаем последний выделенный текст (эта логика остается)
     chrome.storage.local.get(['lastSelected'], (result) => {
