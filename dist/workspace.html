@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>QA-ассистент</title>
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+    <h3>QA-ассистент</h3>
+    <textarea id="input" placeholder="Введите текст требования или выделите его на странице..."></textarea>
+    <div class="checkbox-container">
+        <label class="styled-checkbox">
+            <input type="checkbox" id="checklist-toggle" />
+            <span class="checkmark"></span>
+            Чек-лист
+        </label>
+        <label class="styled-checkbox">
+            <input type="checkbox" id="thinking-toggle" />
+            <span class="checkmark"></span>
+            Показать размышления
+        </label>
+    </div>
+    <div class="button-group">
+        <button id="send">Анализировать</button>
+        <button id="clear">Очистить</button>
+    </div>
+    <div class="output" id="response"></div>
+    <button id="copy">Копировать результат</button>
+    <p style="font-size: 11px; color: #888; text-align: center; margin-top: 16px;">
+        by Evgenii Gerasin
+    </p>
+    <script src="popup.js"></script>
+</body>
+</html>
