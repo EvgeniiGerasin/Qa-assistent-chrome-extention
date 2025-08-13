@@ -1,4 +1,4 @@
-import { getPrompt, formatPrompt } from "./prompts";
+import { getPrompt, formatPrompt } from "./prompts.js";
 
 interface StoredData {
   lastSelected?: string;
@@ -18,11 +18,10 @@ interface PromptType {
 
 // Функция для стриминга ответа от OpenRouter
 async function streamOpenRouterResponse(
-  prompt: string, 
-  responseElement: HTMLElement, 
+  prompt: string,
+  responseElement: HTMLElement,
   thinking: boolean = true
 ): Promise<void> {
-  // Сразу очищаем поле ответа и показываем статус
   responseElement.innerText = 'Взял в работу...';
 
   try {
@@ -34,11 +33,17 @@ async function streamOpenRouterResponse(
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-20b:free",
+        // Используйте одну из доступных бесплатных моделей
+        model: "meta-llama/llama-3.2-3b-instruct:free", 
         messages: [
-          { role: "user", content: prompt }
+          {
+            role: "user",
+            content: prompt
+          }
         ],
-        stream: true  // Включаем стриминг
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 2000
       })
     });
 
@@ -47,7 +52,6 @@ async function streamOpenRouterResponse(
       throw new Error(`Ошибка API: ${response.status} ${response.statusText} — ${errorText}`);
     }
 
-    // Очистим поле после подтверждения успешного ответа
     responseElement.innerText = '';
 
     if (!response.body) {
@@ -56,19 +60,30 @@ async function streamOpenRouterResponse(
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
+    let buffer = '';
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      
+      // Оставляем последнюю неполную строку в буфере
+      buffer = lines.pop() || '';
 
       for (const line of lines) {
-        if (line.startsWith("data:")) {
-          const dataStr = line.slice(5).trim(); // Убираем "data:"
+        const trimmedLine = line.trim();
+        
+        if (trimmedLine.startsWith("data: ")) {
+          const dataStr = trimmedLine.slice(6); // Убираем "data: "
+          
           if (dataStr === "[DONE]") {
-            return; // Стриминг завершён
+            return;
+          }
+
+          if (dataStr === "") {
+            continue; // Пропускаем пустые строки
           }
 
           try {
@@ -79,7 +94,6 @@ async function streamOpenRouterResponse(
               responseElement.innerText += content;
             }
           } catch (e) {
-            // Игнорируем ошибки парсинга отдельных фрагментов
             console.warn("Не удалось распарсить SSE-фрагмент:", dataStr);
           }
         }
@@ -127,16 +141,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const checkListChecked = checklistToggle.checked;
+    const checkListChecked = true;
     const thinkingChecked = thinkingToggle.checked;
 
     // Формируем финальный промпт
     if (checkListChecked) {
       const basePrompt = getPrompt('checklist')
-      finalPrompt = formatPrompt(basePrompt, {requirement: userInput});
+      finalPrompt = formatPrompt(basePrompt, { requirement: userInput });
     } else {
       const basePrompt = getPrompt('testcase')
-      finalPrompt = formatPrompt(basePrompt, {requirement: userInput});
+      finalPrompt = formatPrompt(basePrompt, { requirement: userInput });
     }
 
     responseDiv.textContent = "Генерация ответа..."; // Начальное сообщение
@@ -159,9 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.clipboard.writeText(textToCopy).then(() => {
         const originalText = copyButton.textContent;
         copyButton.textContent = "Скопировано!";
-        setTimeout(() => { 
+        setTimeout(() => {
           if (copyButton) {
-            copyButton.textContent = originalText || "Копировать результат"; 
+            copyButton.textContent = originalText || "Копировать результат";
           }
         }, 2000);
       }).catch(err => {
