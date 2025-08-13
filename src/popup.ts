@@ -25,10 +25,13 @@ async function streamOpenRouterResponse(
   responseElement.innerText = 'Взял в работу...';
 
   try {
+    const data = await fetch('./keys.json');
+    const keys = await data.json();
+    const apiKey = keys.openrouter_api_key;
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer <<api-key>>",
+        "Authorization": `Bearer ${apiKey}`,
         "X-Title": "Your Site Name",
         "Content-Type": "application/json"
       },

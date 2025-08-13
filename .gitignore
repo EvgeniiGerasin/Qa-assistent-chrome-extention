@@ -5,3 +5,4 @@ dist/*
 !dist/popup.html
 !dist/workspace.html
 .env
+keys.json
