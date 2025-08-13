@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "QA-ассистент",
   "version": "0.1",
-  "description": "Автогенерация тестовой документации. Выдели требование и сгенерируй!",
+  "description": "Автогенерация проверок. Выдели требование и сгенерируй!",
   "permissions": [
     "contextMenus",
     "activeTab",
@@ -11,14 +11,13 @@
     "notifications"
   ],
   "host_permissions": [
-    "http://192.168.233.208:11434/*",
     "https://openrouter.ai/api/v1/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "dist/background.js"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "dist/popup.html",
     "default_icon": "icons/icon.png"
   },
   "icons": {
