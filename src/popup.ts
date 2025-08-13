@@ -1,4 +1,4 @@
-// popup.ts
+import { getPrompt, formatPrompt } from "./prompts";
 
 interface StoredData {
   lastSelected?: string;
@@ -95,14 +95,6 @@ async function streamOpenRouterResponse(
   }
 }
 
-function getPrompt(type_prompt: string): string {
-  const prompt: PromptType = {
-    "testcase": "Ты опытный тестировщик ПО::Создай как можно больше тест-кейсов (положительные и негативные сценарии) по заданному требованию к ПО::ТРЕБОВАНИЕ: {requirement}::Пример: Пример: Тест-кейс 1. Проверка наличия окна приветствия\n Шаги\n 1. Авторизоваться под пользователем\n 2. Перейти в оглавление\n Ожидаемый результат: надпись приветствие\n\n::В ответе только результат без лишнего текста. Не надо размечать его markdown",
-    "checklist": "Ты опытный тестировщик ПО::Создай как можно подробный чек-лист (положительные и негативные сценарии) по заданному требованию к ПО::ТРЕБОВАНИЕ: {requirement}::Пример: Пример: Проверка 1. Проверка наличия окна приветствия\n Проверка 2. Перейти в оглавление и проверить кнопку\n::В ответе только результат без лишнего текста. Не надо размечать его markdown",
-  };
-  return prompt[type_prompt] || "";
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('input') as HTMLInputElement | null;
   const responseDiv = document.getElementById('response') as HTMLDivElement | null;
@@ -140,9 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Формируем финальный промпт
     if (checkListChecked) {
-      finalPrompt = getPrompt('checklist').replace('{requirement}', userInput);
+      const basePrompt = getPrompt('checklist')
+      finalPrompt = formatPrompt(basePrompt, {requirement: userInput});
     } else {
-      finalPrompt = getPrompt('testcase').replace('{requirement}', userInput);
+      const basePrompt = getPrompt('testcase')
+      finalPrompt = formatPrompt(basePrompt, {requirement: userInput});
     }
 
     responseDiv.textContent = "Генерация ответа..."; // Начальное сообщение

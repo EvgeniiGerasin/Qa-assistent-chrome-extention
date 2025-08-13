@@ -14,7 +14,8 @@
     "https://openrouter.ai/api/v1/*"
   ],
   "background": {
-    "service_worker": "dist/background.js"
+    "service_worker": "dist/background.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "dist/popup.html",
