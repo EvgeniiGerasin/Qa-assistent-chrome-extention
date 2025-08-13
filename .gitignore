@@ -4,4 +4,4 @@ node_modules/
 dist/*
 !dist/popup.html
 !dist/workspace.html
-.env/
+.env
