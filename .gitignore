@@ -6,3 +6,4 @@ dist/*
 !dist/workspace.html
 .env
 keys.json
+package-lock.json
