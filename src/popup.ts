@@ -36,8 +36,7 @@ async function streamOpenRouterResponse(
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        // Используйте одну из доступных бесплатных моделей
-        model: "meta-llama/llama-3.2-3b-instruct:free", 
+        model: "openai/gpt-oss-20b:free", 
         messages: [
           {
             role: "user",
