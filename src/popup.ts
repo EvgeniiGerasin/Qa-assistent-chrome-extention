@@ -12,10 +12,6 @@ interface OpenRouterResponse {
   }>;
 }
 
-interface PromptType {
-  [key: string]: string;
-}
-
 // Функция для стриминга ответа от OpenRouter
 async function streamOpenRouterResponse(
   prompt: string,
