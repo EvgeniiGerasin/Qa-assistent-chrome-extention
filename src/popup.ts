@@ -16,7 +16,6 @@ interface OpenRouterResponse {
 async function streamOpenRouterResponse(
   prompt: string,
   responseElement: HTMLElement,
-  thinking: boolean = true
 ): Promise<void> {
   responseElement.innerText = 'Взял в работу...';
 
@@ -38,7 +37,7 @@ async function streamOpenRouterResponse(
       top_p: 0.2,
       frequency_penalty: 0,
       presence_penalty: 0,
-      max_tokens: 4096,
+      max_tokens: 10000,
       stream: true,
       reasoning_effort: 'low',
       messages: [{ role: 'user', content: prompt }]
@@ -128,13 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendButton = document.getElementById('send') as HTMLButtonElement | null;
   const clearButton = document.getElementById('clear') as HTMLButtonElement | null;
   const copyButton = document.getElementById('copy') as HTMLButtonElement | null;
-  const checklistToggle = document.getElementById('checklist-toggle') as HTMLInputElement | null;
-  const thinkingToggle = document.getElementById('thinking-toggle') as HTMLInputElement | null;
+  const negativeToggle = document.getElementById('negative-toggle') as HTMLInputElement | null;
 
   let finalPrompt: string;
 
   // Проверяем, что все элементы существуют
-  if (!input || !responseDiv || !sendButton || !clearButton || !copyButton || !checklistToggle || !thinkingToggle) {
+  if (!input || !responseDiv || !sendButton || !clearButton || !copyButton || !negativeToggle) {
     console.error("Не удалось найти все необходимые элементы DOM");
     return;
   }
@@ -154,22 +152,26 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const negativeChecked = negativeToggle.checked;
     const checkListChecked = true;
-    const thinkingChecked = thinkingToggle.checked;
 
-    // Формируем финальный промпт
-    if (checkListChecked) {
-      const basePrompt = getPrompt('checklist')
-      finalPrompt = formatPrompt(basePrompt, { requirement: userInput });
+    let basePrompt = '';
+
+    if (negativeChecked) {
+      if (checkListChecked) {
+        basePrompt = getPrompt('checklistNegative')
+      }
     } else {
-      const basePrompt = getPrompt('testcase')
-      finalPrompt = formatPrompt(basePrompt, { requirement: userInput });
-    }
+        basePrompt = getPrompt('checklist')
+      }
+
+    
+    finalPrompt = formatPrompt(basePrompt, { requirement: userInput });
 
     responseDiv.textContent = "Генерация ответа..."; // Начальное сообщение
 
     // Вызываем функцию для стриминга
-    await streamOpenRouterResponse(finalPrompt, responseDiv, thinkingChecked);
+    await streamOpenRouterResponse(finalPrompt, responseDiv);
   });
 
   // Обработчик кнопки "Очистить"
