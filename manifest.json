@@ -11,7 +11,7 @@
     "notifications"
   ],
   "host_permissions": [
-    "https://openrouter.ai/api/v1/*"
+    "*://*.nvidia.com/*"
   ],
   "background": {
     "service_worker": "dist/background.js",

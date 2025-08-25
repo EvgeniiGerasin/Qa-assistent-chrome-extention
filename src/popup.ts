@@ -20,30 +20,35 @@ async function streamOpenRouterResponse(
 ): Promise<void> {
   responseElement.innerText = 'Взял в работу...';
 
+  const data = await fetch('./keys.json');
+  const keys = await data.json();
+  const apiKey = keys.openrouter_api_key;
+
+  const url = 'https://integrate.api.nvidia.com/v1/chat/completions';
+  const options = {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'openai/gpt-oss-20b',
+      temperature: 0.1,
+      top_p: 0.2,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      max_tokens: 4096,
+      stream: true,
+      reasoning_effort: 'low',
+      messages: [{ role: 'user', content: prompt }]
+    })
+  };
+
   try {
-    const data = await fetch('./keys.json');
-    const keys = await data.json();
-    const apiKey = keys.openrouter_api_key;
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "X-Title": "Your Site Name",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-oss-20b:free", 
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        stream: true,
-        temperature: 0.7,
-        max_tokens: 2000
-      })
-    });
+
+    const response = await fetch(url, options);
+    console.log(response)
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -66,16 +71,16 @@ async function streamOpenRouterResponse(
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
-      
+
       // Оставляем последнюю неполную строку в буфере
       buffer = lines.pop() || '';
 
       for (const line of lines) {
         const trimmedLine = line.trim();
-        
+
         if (trimmedLine.startsWith("data: ")) {
           const dataStr = trimmedLine.slice(6); // Убираем "data: "
-          
+
           if (dataStr === "[DONE]") {
             return;
           }
@@ -85,7 +90,17 @@ async function streamOpenRouterResponse(
           }
 
           try {
-            const parsed: OpenRouterResponse = JSON.parse(dataStr);
+            // Используем более общую типизацию или any
+            const parsed = JSON.parse(dataStr);
+
+            // Проверяем finish_reason для завершения
+            const finishReason = parsed.choices?.[0]?.finish_reason;
+            if (finishReason) {
+              // Поток завершён
+              return;
+            }
+
+            // Получаем контент
             const content = parsed.choices?.[0]?.delta?.content;
 
             if (content) {
